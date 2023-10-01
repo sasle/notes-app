@@ -16,6 +16,28 @@ route.get('/', (req: Request, res: Response) => {
     res.json({ message: 'hello world' })
 })
 
+route.post('/login', async (req: Request, res: Response) => {
+    const bodySchema = z.object({
+        values: z.object({
+            username: z.string(),
+            password: z.string()
+        })
+    })
+    const { values } = bodySchema.parse(req.body)
+
+    const existingUser = await prisma.user.findFirst({
+        where: {
+            username: values.username
+        }
+    })
+
+    if (!existingUser) {
+        return res.status(400).send({ error: "User doesn't exist" })
+    }
+
+    return res.send();
+})
+
 route.post('/user', async (req: Request, res: Response) => {
     const bodySchema = z.object({
         values: z.object({
@@ -32,7 +54,7 @@ route.post('/user', async (req: Request, res: Response) => {
     })
 
     if (existingUser) {
-        throw new Error("User already exists.")
+        return res.status(400).send({ error: "User already exists" })
     }
 
     const createdUser = await prisma.user.create({

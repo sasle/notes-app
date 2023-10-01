@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { api } from "@/lib/axios"
+import { AxiosError } from "axios"
 
 const formSchema = z.object({
     username: z.string().min(2, {
@@ -24,6 +25,7 @@ const formSchema = z.object({
 })
 
 interface SignUpFormProps {
+    onError: (error: AxiosError) => void,
     onFinished: () => void
 }
 
@@ -41,9 +43,11 @@ export function SignUpForm(props: SignUpFormProps) {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         await api.post('/user', {
             values,
+        }).then(() => {
+            props.onFinished();
+        }).catch((error) => {
+            props.onError(error)
         })
-        console.log(values)
-        props.onFinished();
     }
 
     return (

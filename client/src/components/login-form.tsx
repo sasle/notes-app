@@ -12,6 +12,8 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { api } from "@/lib/axios"
+import { AxiosError } from "axios"
 
 const formSchema = z.object({
     username: z.string().min(2, {
@@ -22,7 +24,11 @@ const formSchema = z.object({
     }),
 })
 
-export function LoginForm() {
+interface LoginFormProps {
+    onError: (error: AxiosError) => void,
+    onSuccessfulLogin: () => void
+}
+export function LoginForm(props: LoginFormProps) {
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -32,11 +38,14 @@ export function LoginForm() {
         },
     })
 
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        await api.post('/login', {
+            values,
+        }).then(() => {
+            props.onSuccessfulLogin()
+        }).catch((error) => {
+            props.onError(error)
+        })
     }
 
     return (
