@@ -1,29 +1,29 @@
-import { LoginForm } from "@/components/login-form";
-import { useToast } from "@/components/ui/use-toast";
-import { AxiosError } from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from 'react'
+import { api } from '@/lib/axios';
+import { Note } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 export function HomePage() {
-    const { toast } = useToast();
-    const navigate = useNavigate();
+    const [notes, setNotes] = useState<Note[]>([])
 
-    function onError(error: AxiosError) {
-        console.log(error)
-        toast({
-            title: 'Error on login',
-            description: error.response?.data?.error,
-            variant: "destructive"
-        })
-    }
 
-    function onSuccessfulLogin() {
-        navigate('/home')
-    }
+    const loadNotes = useCallback(async () => {
+        const userId = localStorage.getItem("userId")
+        const { data } = await api.get(`/user/${userId}/notes`)
+        setNotes(data);
+    }, [])
+
+    useEffect(() => {
+        loadNotes();
+    }, [loadNotes])
+
     return (
-        <div className="flex min-h-screen justify-center items-center ">
-            <div className="bg-purple-950 bg-opacity-40 p-8 text-center space-y-5 w-1/3">
-                <h1 className="text-5xl font-semibold">Welcome!</h1>
-            </div>
+        <div className='flex flex-col justify-center items-center min-h-screen space-y-3'>
+            {notes.map(note => {
+                return <p>{note.content}</p>
+            })}
+            <Button className='flex gap-2' variant={"secondary"}><PlusCircle />Add a new Note.</Button>
         </div>
     )
 }

@@ -41,7 +41,8 @@ export function LoginForm(props: LoginFormProps) {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         await api.post('/login', {
             values,
-        }).then(() => {
+        }).then((res) => {
+            localStorage.setItem("userId", res.data.id)
             props.onSuccessfulLogin()
         }).catch((error) => {
             props.onError(error)

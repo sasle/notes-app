@@ -16,6 +16,35 @@ route.get('/', (req: Request, res: Response) => {
     res.json({ message: 'hello world' })
 })
 
+
+route.get('/user/:userId/notes', async (req: Request, res: Response) => {
+    const paramsSchema = z.object({
+        userId: z.string()
+    })
+    const { userId } = paramsSchema.parse(req.params)
+    const idNumber = Number(userId)
+
+
+    const existingUser = await prisma.user.findUnique({
+        where: {
+            id: idNumber
+        }
+    })
+
+    if (!existingUser) {
+        return res.status(400).send({ error: "User doesn't exist" })
+    }
+
+    const notes = await prisma.note.findMany({
+        where: {
+            authorId: existingUser.id
+        }
+    })
+
+    res.json(notes)
+})
+
+
 route.post('/login', async (req: Request, res: Response) => {
     const bodySchema = z.object({
         values: z.object({
@@ -35,7 +64,7 @@ route.post('/login', async (req: Request, res: Response) => {
         return res.status(400).send({ error: "User doesn't exist" })
     }
 
-    return res.send();
+    return res.send(existingUser);
 })
 
 route.post('/user', async (req: Request, res: Response) => {
