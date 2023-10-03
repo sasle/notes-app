@@ -16,6 +16,22 @@ route.get('/', (req: Request, res: Response) => {
     res.json({ message: 'hello world' })
 })
 
+route.delete('/user/:userId/notes/:noteId', async (req: Request, res: Response) => {
+    const paramsSchema = z.object({
+        userId: z.string(),
+        noteId: z.string()
+    })
+    const { userId, noteId } = paramsSchema.parse(req.params)
+    const idNumber = Number(noteId)
+
+    await prisma.note.delete({
+        where: {
+            id: idNumber
+        }
+    })
+
+    return res.send();
+})
 
 route.post('/user/:userId/notes', async (req: Request, res: Response) => {
     const bodySchema = z.object({
