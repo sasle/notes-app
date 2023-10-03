@@ -17,6 +17,32 @@ route.get('/', (req: Request, res: Response) => {
 })
 
 
+route.post('/user/:userId/notes', async (req: Request, res: Response) => {
+    const bodySchema = z.object({
+        values: z.object({
+            title: z.string(),
+            content: z.string()
+        })
+    })
+    const { values } = bodySchema.parse(req.body)
+
+    const paramsSchema = z.object({
+        userId: z.string()
+    })
+    const { userId } = paramsSchema.parse(req.params)
+    const idNumber = Number(userId)
+
+    const newNote = await prisma.note.create({
+        data: {
+            title: values.title,
+            content: values.content,
+            authorId: idNumber
+        }
+    })
+
+    return res.send(newNote);
+})
+
 route.get('/user/:userId/notes', async (req: Request, res: Response) => {
     const paramsSchema = z.object({
         userId: z.string()
